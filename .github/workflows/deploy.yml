@@ -1,0 +1,23 @@
+name: Deploy to ec2
+
+on:
+  workflow_run:
+    workflows: ["NASA PROJECT CI"]
+    types:
+      - completed
+
+jobs:
+  build:
+    runs-on: self-hosted
+    steps:
+      - name: Docker hub login
+        env:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+        run: docker login -u $username -p $password   
+      - name: Pull Docker image
+        run: docker pull sumankumar2755/nasa-project:latest
+      - name: Delete Old docker container
+        run: docker rm -f nasa-project-container || true
+      - name: Run Docker Container
+        run: docker run -d -p 8000:8000 --name nasa-project-container sumankumar2755/nasa-project
